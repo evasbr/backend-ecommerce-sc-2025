@@ -14,6 +14,7 @@ const userSchema = Joi.object({
 function validateCreateUser(req, res, next) {
   const { user_name, user_birthday, user_email, user_password } = req.body;
 
+  console.log(req.body);
   const data = {
     user_name,
     user_birthday,

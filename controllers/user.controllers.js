@@ -5,13 +5,8 @@ const prisma = new PrismaClient();
 async function addNewUser(req, res) {
   try {
     //mengambil data dari body
-    const {
-      user_name,
-      user_birthday,
-      user_email,
-      user_password,
-      user_profile,
-    } = req.body;
+    let { user_name, user_birthday, user_email, user_password, user_profile } =
+      req.body;
 
     //periksa apakah sudah ada email yang sama
     const dataUser = await prisma.user.findUnique({
@@ -35,6 +30,7 @@ async function addNewUser(req, res) {
         user_password,
         user_profile,
         created_at: new Date(),
+        user_profile: req.file ? req.file.path.replace(/\\/g, "/") : null,
         id_level: "1",
       },
     });
@@ -82,6 +78,11 @@ async function getUserById(req, res) {
 
     if (!userData) {
       throw new Error("Data pengguna tidak ditemukan");
+    }
+
+    if (userData.user_profile) {
+      // Add the full URL for the image
+      userData.user_profile = `http://localhost:3000/${userData.user_profile}`;
     }
 
     res.status(200).json({ success: true, data: userData });

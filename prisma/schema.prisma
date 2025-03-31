@@ -55,7 +55,6 @@ model Product {
   product_thumbnail String
   product_name      String
   product_description String?
-  product_category  String
   created_at         DateTime
   updated_at         DateTime   @updatedAt
 
@@ -85,7 +84,6 @@ model ProductVariation {
   id_variation    String  @id @default(uuid())
   id_product      String
   variation_name  String
-  variation_thumbnail String
   variation_price Int
   product          Product @relation("ProductVariation", fields: [id_product], references: [id_product])
   TransactionProductDetail TransactionProductDetail[] @relation("TransactionProducts")
