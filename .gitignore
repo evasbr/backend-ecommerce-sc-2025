@@ -1,3 +1,13 @@
+#image folders
+# ignore evertything inside the folders
+uploads/product_thumbnails/*
+uploads/store_profiles/*
+uploads/user_profiles/*
+
+!uploads/product_thumbnails/
+!uploads/store_profiles/
+!uploads/user_profiles/
+
 # Logs
 logs
 *.log

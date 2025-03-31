@@ -9,14 +9,21 @@ const {
 } = require("../controllers");
 
 const validateCreateUser = require("../middleware/validation/create-user.validation");
-
 const validateUpdateUser = require("../middleware/validation/update-user.validation");
+const { uploadSingleImage } = require("../middleware/imageUpload");
 
 const router = express.Router();
 
 router.get("/users/all", getAllUser);
 router.get("/user/:id", getUserById);
-router.post("/user/new", validateCreateUser, addNewUser);
+
+router.post(
+  "/user/new",
+  uploadSingleImage("user_profile"),
+  validateCreateUser,
+  addNewUser
+);
+
 router.delete("/user/:id", deleteUserById);
 router.put("/user/:id", validateUpdateUser, updateUserById);
 
