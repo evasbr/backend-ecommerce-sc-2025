@@ -28,7 +28,8 @@ model User {
   user_profile   String?
   created_at     DateTime
   updated_at     DateTime @updatedAt
-  id_level       String     
+  id_level       String
+  deleted_at     DateTime?     
 
   level          UserLevel @relation("userHasLevel", fields:[id_level], references: [id] )
   store          Store?      @relation("userHasStore")
@@ -44,6 +45,7 @@ model Store {
   store_description String?
   created_at    DateTime
   updated_at    DateTime  @updatedAt
+  deleted_at     DateTime?  
 
   user          User  @relation("userHasStore", fields: [id_user], references: [id_user])
   product       Product[]   @relation("storeHasProducts")
@@ -57,6 +59,7 @@ model Product {
   product_description String?
   created_at         DateTime
   updated_at         DateTime   @updatedAt
+  deleted_at     DateTime?  
 
   store               Store   @relation("storeHasProducts", fields: [id_store], references: [id_store])
   ProductCategory ProductCategory[] @relation("ProductCategory")
@@ -74,8 +77,8 @@ model ProductCategory {
   id_product   String
   id_category   String
 
-  product       Product  @relation("ProductCategory", fields: [id_product], references: [id_product])
-  category      Category @relation("CategoryProduct", fields: [id_category], references: [id_category])
+  product       Product  @relation("ProductCategory", fields: [id_product], references: [id_product], onDelete: Cascade)
+  category      Category @relation("CategoryProduct", fields: [id_category], references: [id_category], onDelete: Cascade)
 
   @@id([id_product, id_category])
 }
@@ -85,6 +88,8 @@ model ProductVariation {
   id_product      String
   variation_name  String
   variation_price Int
+  deleted_at      DateTime?   
+
   product          Product @relation("ProductVariation", fields: [id_product], references: [id_product])
   TransactionProductDetail TransactionProductDetail[] @relation("TransactionProducts")
   CartProductDetail   Cart[] @relation("CartProduct")

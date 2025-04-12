@@ -2,56 +2,6 @@ const { PrismaClient } = require("@prisma/client");
 
 const prisma = new PrismaClient();
 
-async function addNewUser(req, res) {
-  try {
-    //mengambil data dari body
-    let { user_name, user_birthday, user_email, user_password, user_profile } =
-      req.body;
-
-    //periksa apakah sudah ada email yang sama
-    const dataUser = await prisma.user.findUnique({
-      where: {
-        user_email,
-      },
-    });
-
-    if (dataUser) {
-      throw new Error(
-        "Email sudah ada. Masuk atau gunakan email lain untuk mendaftar"
-      );
-    }
-
-    // mengirim data ke database
-    const data = await prisma.user.create({
-      data: {
-        user_name,
-        user_birthday: new Date(user_birthday),
-        user_email,
-        user_password,
-        user_profile,
-        created_at: new Date(),
-        user_profile: req.file ? req.file.path.replace(/\\/g, "/") : null,
-        id_level: "1",
-      },
-    });
-
-    if (!data) {
-      throw new Error("Gagal membuat akun baru");
-    }
-
-    res.status(201).json({
-      success: true,
-      message: "Berhasil membuat akun",
-      data,
-    });
-  } catch (error) {
-    res.status(400).json({
-      success: false,
-      message: error.message,
-    });
-  }
-}
-
 async function getAllUser(req, res) {
   try {
     const allUserData = await prisma.user.findMany();
@@ -158,13 +108,13 @@ async function deleteUserById(req, res) {
     }
 
     //hapus data
-    await prisma.user.delete({
+    await prisma.user.update({
       where: {
-        id_user: id,
+        deleted_at: new Date(),
       },
     });
 
-    res.status(201).json({
+    res.status(200).json({
       success: true,
       message: "Data pengguna berhasil dihapus",
     });
@@ -174,7 +124,6 @@ async function deleteUserById(req, res) {
 }
 
 module.exports = {
-  addNewUser,
   getAllUser,
   getUserById,
   updateUserById,
