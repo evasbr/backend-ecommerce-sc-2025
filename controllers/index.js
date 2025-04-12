@@ -1,5 +1,4 @@
 const {
-  addNewUser,
   getAllUser,
   getUserById,
   updateUserById,
@@ -15,8 +14,9 @@ const {
 
 const { addNewProduct, searchProduct } = require("./products.controllers");
 
+const { registerUser, login } = require("./auth.controllers");
+
 module.exports = {
-  addNewUser,
   getAllUser,
   getUserById,
   updateUserById,
@@ -27,4 +27,6 @@ module.exports = {
   getStoreInfoById,
   addNewProduct,
   searchProduct,
+  registerUser,
+  login,
 };

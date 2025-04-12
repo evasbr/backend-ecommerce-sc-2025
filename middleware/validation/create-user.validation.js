@@ -1,4 +1,6 @@
 const Joi = require("joi");
+const fs = require("fs");
+const path = require("path");
 
 const userSchema = Joi.object({
   user_name: Joi.string()
@@ -14,7 +16,6 @@ const userSchema = Joi.object({
 function validateCreateUser(req, res, next) {
   const { user_name, user_birthday, user_email, user_password } = req.body;
 
-  console.log(req.body);
   const data = {
     user_name,
     user_birthday,
@@ -25,10 +26,26 @@ function validateCreateUser(req, res, next) {
   const { error } = userSchema.validate(data);
 
   if (error) {
+    if (req.file) {
+      let uploadedFilePath = path.join(
+        __dirname,
+        "..",
+        req.file.path.replace(/\\/g, "/")
+      );
+
+      uploadedFilePath = uploadedFilePath.replace("\middleware", "");
+
+      if (fs.existsSync(uploadedFilePath)) {
+        fs.unlinkSync(uploadedFilePath);
+      }
+    }
+
     const details = error.details.map((detail) => detail.message).join(", ");
-    return res
-      .status(400)
-      .json({ success: false, message: `Data user tidak valid: ${details}` });
+    console.log(details);
+    return res.status(400).json({
+      success: false,
+      message: `Data user tidak valid: ${details}`,
+    });
   }
 
   next();
