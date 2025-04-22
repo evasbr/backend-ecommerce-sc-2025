@@ -1,14 +1,14 @@
 const express = require("express");
 const Router = require("./routes");
-const path = require("path");
+const cookieParser = require("cookie-parser");
 
 const app = express();
 
 app.use(express.json());
 
-app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser(process.env.COOKIE_SECRET));
 
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use(express.urlencoded({ extended: true }));
 
 app.use(Router);
 
