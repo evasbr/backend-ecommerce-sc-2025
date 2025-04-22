@@ -1,20 +1,17 @@
 const { PrismaClient } = require("@prisma/client");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const path = require("path");
-const fs = require("fs");
+const uploadToCloudinary = require("../utils/upload-to-cloudinary.js");
 
 const prisma = new PrismaClient();
 
 async function registerUser(req, res) {
-  let uploadedFilePath;
-
   try {
     const { user_name, user_birthday, user_email, user_password } = req.body;
 
-    // Store the uploaded file path if multer has stored a file
-    if (req.file) {
-      uploadedFilePath = req.file.path.replace(/\\/g, "/");
+    // Cek apakah field yang wajib sudah lengkap
+    if (!user_name || !user_email || !user_password) {
+      throw new Error("Username, email, dan password harus ada");
     }
 
     // Check if email is already used
@@ -38,6 +35,15 @@ async function registerUser(req, res) {
       select: { id: true },
     });
 
+    let imageUrl = null;
+    if (req.file && req.file.buffer) {
+      imageUrl = await uploadToCloudinary(
+        req.file.buffer,
+        "user_profile",
+        req.file.originalname
+      );
+    }
+
     const userData = await prisma.user.create({
       data: {
         user_name,
@@ -45,10 +51,13 @@ async function registerUser(req, res) {
         user_email,
         user_password: hashedPassword,
         created_at: new Date(),
-        user_profile: uploadedFilePath || null,
+        user_profile: imageUrl ? imageUrl : null,
         id_level: level.id,
       },
     });
+
+    // jangan sertakan password di response
+    delete userData.password;
 
     res.status(201).json({
       success: true,
@@ -56,14 +65,6 @@ async function registerUser(req, res) {
       data: userData,
     });
   } catch (error) {
-    // Delete uploaded file if an error occurred
-    if (uploadedFilePath) {
-      const absolutePath = path.join(__dirname, "..", uploadedFilePath); // Adjust ".." if needed
-      if (fs.existsSync(absolutePath)) {
-        fs.unlinkSync(absolutePath);
-      }
-    }
-
     console.error("registerUser error:", error);
 
     res.status(400).json({
@@ -77,11 +78,8 @@ async function login(req, res) {
   try {
     const { email, password } = req.body;
 
-    // Check if the email exist
     let dataUser = await prisma.user.findUnique({
-      where: {
-        user_email: email,
-      },
+      where: { user_email: email },
       select: {
         id_user: true,
         user_name: true,
@@ -89,54 +87,51 @@ async function login(req, res) {
         user_email: true,
         user_password: true,
         level: {
-          select: {
-            name: true,
-          },
+          select: { name: true },
         },
       },
     });
 
-    // Check if the password given match the password stored in database
-    // we have to decrypt the password in database to its original form
+    if (!dataUser) {
+      throw new Error("Email not found");
+    }
+
     const match = await bcrypt.compare(password, dataUser.user_password);
     if (!match) {
       throw new Error("Password not valid");
     }
 
-    // we will store the user_id and level to the token, so we have to extract it first.
-    const id_user = dataUser.user_id;
+    const id_user = dataUser.id_user;
     const userLevel = dataUser.level.name;
 
-    // Generate a token based on user data
     const token = jwt.sign(
       { id_user, role: userLevel },
       process.env.JWT_SECRET,
-      {
-        expiresIn: "60s",
-      }
+      { expiresIn: "1h" }
     );
 
-    dataUser = {
-      ...dataUser,
-      level: dataUser.level.name,
-    };
+    // tidak menyertakan password pada response
+    delete dataUser.user_password;
+    dataUser.level = userLevel;
 
-
-    //  localstorage, sessioin storage
     res
-      // .cookie("token", token, { signed: true, httpOnly: true })
+      .cookie("token", token, {
+        signed: true,
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production" || false,
+      })
       .status(200)
       .json({
         success: true,
-        message: "Successfully login",
+        message: "Successfully logged in",
         data: dataUser,
         token,
       });
   } catch (error) {
-    console.log("login : " + error);
+    console.log("login error:", error.message);
     res.status(400).json({
       success: false,
-      message: "Failed to login.",
+      message: error.message || "Failed to login.",
     });
   }
 }

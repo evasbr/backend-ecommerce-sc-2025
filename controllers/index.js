@@ -10,9 +10,15 @@ const {
   editStoreInfo,
   deleteStore,
   getStoreInfoById,
+  getManyStores,
+  getStoreProduct,
 } = require("./store.controllers");
 
-const { addNewProduct, searchProduct } = require("./products.controllers");
+const {
+  addNewProduct,
+  searchProduct,
+  getProductDetail,
+} = require("./products.controllers");
 
 const { registerUser, login } = require("./auth.controllers");
 
@@ -25,6 +31,9 @@ module.exports = {
   editStoreInfo,
   deleteStore,
   getStoreInfoById,
+  getStoreProduct,
+  getProductDetail,
+  getManyStores,
   addNewProduct,
   searchProduct,
   registerUser,
