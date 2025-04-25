@@ -13,7 +13,7 @@ const authorization = require("../middleware/auth.middleware");
 
 const router = express.Router();
 
-router.get("/users/all", authorization(["Admin"]), getAllUser);
+router.get("/users/all", getAllUser);
 router.get("/user/:id", getUserById);
 
 router.delete("/user/:id", deleteUserById);

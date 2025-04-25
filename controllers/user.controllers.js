@@ -4,7 +4,11 @@ const prisma = new PrismaClient();
 
 async function getAllUser(req, res) {
   try {
-    const allUserData = await prisma.user.findMany();
+    const allUserData = await prisma.user.findMany({
+      where: {
+        deleted_at: null,
+      },
+    });
 
     if (!allUserData) {
       throw new Error("Data user tidak ditemukan");

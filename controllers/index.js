@@ -18,6 +18,7 @@ const {
   addNewProduct,
   searchProduct,
   getProductDetail,
+  deleteProduct,
 } = require("./products.controllers");
 
 const { registerUser, login } = require("./auth.controllers");
@@ -33,6 +34,7 @@ module.exports = {
   getStoreInfoById,
   getStoreProduct,
   getProductDetail,
+  deleteProduct,
   getManyStores,
   addNewProduct,
   searchProduct,

@@ -280,4 +280,68 @@ async function getProductDetail(req, res) {
   }
 }
 
-module.exports = { addNewProduct, searchProduct, getProductDetail };
+async function deleteProduct(req, res) {
+  try {
+    const productId = req.params.productId;
+
+    // Cek apakah produk ada
+    const productData = await prisma.product.findUnique({
+      where: {
+        id_product: productId,
+      },
+      select: {
+        id_store: true,
+        store: {
+          select: {
+            id_user,
+          },
+        },
+      },
+    });
+
+    if (!productData) {
+      throw new Error("Produk tidak ditemukan");
+    }
+
+    // Cek apakah user yang mengedit data produk adalah pemilik toko
+    if (productData.store.id_user !== req.user.id_user) {
+      throw new Error("Kamu tidak terotorisasi untuk ini");
+    }
+
+    const deletedProduct = await prisma.$transaction([
+      prisma.product.update({
+        where: {
+          id_product: productId,
+        },
+        data: {
+          deleted_at: new Date(),
+        },
+      }),
+      prisma.variation.updateMany({
+        where: {
+          id_product: productData,
+        },
+        data: {
+          deleted_at: new Date(),
+        },
+      }),
+    ]);
+
+    return res
+      .status(200)
+      .json({ success: true, message: "Berhasil menghapus produk" });
+  } catch (error) {
+    console.error("deleteProduct:", error);
+    return res.status(400).json({
+      success: false,
+      error: error.message || "An unexpected error occurred",
+    });
+  }
+}
+
+module.exports = {
+  addNewProduct,
+  searchProduct,
+  getProductDetail,
+  deleteProduct,
+};
