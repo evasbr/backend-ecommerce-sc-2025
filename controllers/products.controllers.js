@@ -180,7 +180,7 @@ async function searchProduct(req, res) {
     }
 
     const productsRaw = await prisma.product.findMany({
-      where,
+      // where,
       select: {
         id_product: true,
         product_name: true,

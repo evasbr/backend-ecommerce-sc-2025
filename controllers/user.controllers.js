@@ -49,6 +49,7 @@ async function updateUserById(req, res) {
   try {
     //mengambil id dari url parameter
     const id = req.params.id;
+    console.log(id);
 
     //mencari apakah ada data sesuai id
     const userData = await prisma.user.findUnique({
@@ -63,12 +64,13 @@ async function updateUserById(req, res) {
     }
 
     // ambil data perubahan dari body request
-    const { user_name, user_birthday, user_profile } = req.body;
+    const { user_name, user_birthday } = req.body;
+    console.log(user_name);
+    console.log(user_birthday);
 
     const newData = {
       ...userData,
       user_name,
-      user_profile,
     };
 
     if (user_birthday) {
@@ -90,6 +92,7 @@ async function updateUserById(req, res) {
       data: newData,
     });
   } catch (error) {
+    console.log(error);
     res.status(400).json({ success: false, message: error.message });
   }
 }
@@ -103,6 +106,7 @@ async function deleteUserById(req, res) {
     const userData = await prisma.user.findUnique({
       where: {
         id_user: id,
+        deleted_at: null,
       },
     });
 
@@ -114,6 +118,9 @@ async function deleteUserById(req, res) {
     //hapus data
     await prisma.user.update({
       where: {
+        id_user: id,
+      },
+      data: {
         deleted_at: new Date(),
       },
     });
