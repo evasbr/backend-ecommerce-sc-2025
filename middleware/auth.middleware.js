@@ -3,26 +3,29 @@ const jwt = require("jsonwebtoken");
 function authorization(roles = []) {
   return function (req, res, next) {
     try {
-      let token;
-      let user = { role: "guest" };
+      let token = req.signedCookies?.token;
+      const secret = process.env.JWT_SECRET;
 
-      const authHeader = req.headers.authorization;
-
-      if (authHeader && authHeader.startsWith("Bearer ")) {
-        token = authHeader.split(" ")[1];
-
-        if (token) {
-          user = jwt.verify(token, process.env.JWT_SECRET);
-        }
+      if (!token) {
+        throw new Error("No token provided", 401);
       }
-      req.user = user;
 
-      if (!roles.includes(user.role)) {
-        return res.status(403).json({
-          success: false,
-          message: "You are not authorized to access this resource",
-        });
+      if (!secret) {
+        throw new Error("Missing JWT secret");
       }
+      const decoded = jwt.verify(token, secret);
+
+      if (!decoded || typeof decoded !== "object" || !("role" in decoded)) {
+        throw new ClientError("Invalid token payload", 403);
+      }
+
+      const role = decoded.role;
+
+      if (!roles.includes(role)) {
+        throw new Error("You are not authorized to access this resource");
+      }
+
+      req.user = { role, id_user: decoded.user_id };
 
       next();
     } catch (error) {
