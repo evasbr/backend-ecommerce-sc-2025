@@ -1,5 +1,5 @@
 const express = require("express");
-const Router = require("./routes");
+const Router = require("../routes");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
 require("dotenv").config();
@@ -25,6 +25,6 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(Router);
 
-app.listen(5000, () => {
-  console.log(`Server berjalan di http://localhost:5000/`);
+app.listen(3000, () => {
+  console.log(`Server berjalan di http://localhost:3000/`);
 });
