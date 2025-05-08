@@ -22,6 +22,6 @@ router.post(
 router.delete("/product/:productId", deleteProduct);
 router.get("/product/:productId", getProductDetail);
 
-router.get("/product/search", searchProduct);
+router.get("/products", searchProduct);
 
 module.exports = router;
